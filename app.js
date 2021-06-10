@@ -9,6 +9,7 @@ const AuthRoute = require("./routes/auth");
 
 mongoose.connect("mongodb://localhost:27017/testdb",{useNewUrlParser: true, useUnifiedTopology:true},(err,res) =>{
  const db = mongoose.connection
+
 db.on("error", (err) => {
     console.log(err)
 })
@@ -18,7 +19,7 @@ db.once("open", () => {
 
 const app = express();
 
-app.use(morgan("dev"))
+app.use(morgan(""))
 app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json())
 app.use('/uploads', express.static("uploads"))

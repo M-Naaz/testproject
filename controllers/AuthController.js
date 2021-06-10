@@ -1,8 +1,8 @@
-const user = require("../models/User")
+const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 
- export const register = (req, res, next) => {
+ const register = (req, res, next) => {
     bcrypt.hash(req.body.password, 10, function(err, hashedPass){
         if(err) {
             res.json({
@@ -30,7 +30,7 @@ const jwt = require("jsonwebtoken")
     
     })
 }
-    export const login = (req, res, next) => {
+     const login = (req, res, next) => {
         const username = req.body.username
         const password = req.body.password
 
@@ -63,7 +63,7 @@ const jwt = require("jsonwebtoken")
                 }
             
         })
-    }
-// m register, login
-// }odule.exports = {
+     }
+     exports.register = register;
+exports.login = login;
    
