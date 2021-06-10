@@ -64,6 +64,7 @@ const jwt = require("jsonwebtoken")
             
         })
     }
-// m register, login
-// }odule.exports = {
+exports.register = register;
+exports.login = login;
+   
    
