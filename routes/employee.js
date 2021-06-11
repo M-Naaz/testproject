@@ -7,9 +7,7 @@ const upload = require("../middleware/upload")
 const authenticate = require("../middleware/authenticate")
 
 
-router.get('/hi', (req, res, next) => {
-    res.send('Welcome to Home Page')
-  });
+
 
 router.get('/hi', (req, res, next) => {
     res.send('Welcome to Home Page')

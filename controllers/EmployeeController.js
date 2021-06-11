@@ -15,6 +15,7 @@ const index = (req, res, next) => {
 }
 const show = (req, res, next) => {
     const employeeID = req.body.employeeID
+    Employee.findById(employeeID)
     .then(response => {
         res.json({
             response

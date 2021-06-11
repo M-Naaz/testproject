@@ -19,5 +19,5 @@ const employeeSchema  = new Schema({
         type: String
     }
 }, {timestamps: true})
-const Employee = mongoose.model("employees", employeeSchema)
+const Employee = mongoose.model("employee", employeeSchema)
 module.exports = Employee
