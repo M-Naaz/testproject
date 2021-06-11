@@ -64,10 +64,8 @@ const jwt = require("jsonwebtoken")
             
         })
      }
-     exports.register = register;
-exports.login = login;
    
-    }
+    
 exports.register = register;
 exports.login = login;
    
