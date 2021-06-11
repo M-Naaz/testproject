@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const EmployeeRoute = require("./routes/employee");
 const AuthRoute = require("./routes/auth");
+const Validator = require('validatorjs');
 mongoose.connect("mongodb+srv://naaz:naaz@cluster0.2d9o8.mongodb.net/test?retryWrites=true&w=majority",{useNewUrlParser: true, useUnifiedTopology:true})
 .then(() => console.log("database connection established"))
 .catch("error",(err) =>console.log(err));
