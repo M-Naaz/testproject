@@ -63,7 +63,15 @@ const jwt = require("jsonwebtoken")
                 }
             
         })
+<<<<<<< HEAD
      }
      exports.register = register;
 exports.login = login;
    
+=======
+    }
+exports.register = register;
+exports.login = login;
+   
+   
+>>>>>>> e8bcb5af8aa586d5ef4ecaaf9d18cd5ed3209260
