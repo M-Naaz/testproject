@@ -1,6 +1,7 @@
 const User = require("../models/User")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
+const Validator = require('validatorjs');
 
  const register = (req, res, next) => {
     bcrypt.hash(req.body.password, 10, function(err, hashedPass){

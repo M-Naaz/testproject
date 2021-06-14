@@ -28,12 +28,14 @@ const show = (req, res, next) => {
 })
 
 }
+//add new employee
 const store = (req, res, next) => {
     const employee = new Employee({
         name: req.body.name,
         designation: req.body.designation,
         email: req.body.email,
-        phone: req.body.phone
+        phone: req.body.phone,
+        profileImage: req.body.profileImage
     })
     if(req.files) {
         const path = ""
@@ -57,3 +59,30 @@ const store = (req, res, next) => {
     })
 }
 
+//update an employee
+const update = (req, res, next) => {
+    const employeeID = req.body.employeeID
+   const updateData = {
+    name: req.body.name,
+    designation: req.body.designation,
+    email: req.body.email,
+    phone: req.body.phone,
+    profileImage: req.body.profileImage
+   }
+   Employee.findByIdAndUpdate(employeeID, {$set: updateData})
+   .then(() => {
+       res.json({
+       message: "Employee updated successfully!"
+   })
+})
+.catch(error => {
+    res.json({
+        message: "an error occured!"
+    })
+})
+}
+
+exports.store = store;
+exports.show = show;
+exports.index = index;
+exports.update = update;
