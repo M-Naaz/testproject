@@ -65,9 +65,48 @@ const Validator = require('validatorjs');
             
         })
      }
-   
+     const show = (req, res, next) => {
+        const id = req.params.id
+        User.findById(id)
+        .then(response => {
+            res.json({
+                response
+            })
+        })
+    .catch(error => {
+        res.json({
+            message: "an error occured"
+        })
+    })
+    
+    }
+     const update = (req, res, next) => {
+        const employeeID = req.body.employeeID
+        console.log(employeeID)
+       const updateData = {
+        name: req.body.name,
+        designation: req.body.designation,
+        email: req.body.email,
+        phone: req.body.phone,
+        profileImage: req.body.profileImage
+       }
+       User.findByIdAndUpdate(employeeID, {$set: updateData})
+       .then(() => {
+           res.json({
+           message: "Employee updated successfully!"
+       })
+    })
+    .catch(error => {
+        res.json({
+            message: "an error occured!"
+        })
+    })
+    }
+    
     
 exports.register = register;
 exports.login = login;
-   
+   exports.show = show;
+   exports.update = update;
+
    
