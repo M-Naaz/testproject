@@ -4,14 +4,16 @@ const jwt = require("jsonwebtoken")
 const Joi = require("joi")
 const httpCodes = require("http-status-codes");
 
- const register = async (req, res, next) => {
-    const {email, password,name ,phone} = req.body;
-     /** Validation */
-     const registerSchema = Joi.object().keys({ 
+
+//register
+const register = async (req, res, next) => {
+    const { email, password, name, phone } = req.body;
+    /** Validation */
+    const registerSchema = Joi.object().keys({
         email: Joi.string().required().email().messages({
             'string.empty': `Email is required`,
             'string.email': `Email is incorrect`,
-        }), 
+        }),
         password: Joi.string().required().messages({
             'string.empty': `Password is required`,
         }),
@@ -21,121 +23,117 @@ const httpCodes = require("http-status-codes");
         phone: Joi.string().required().messages({
             'string.empty': `Enter valid phone number`,
         })
-    }); 
+    });
 
     const result = registerSchema.validate(req.body);
-    const { value, error } = result; 
-    const valid = error == null; 
-    if (!valid) { 
-        const { details } = error; 
+    const { value, error } = result;
+    const valid = error == null;
+    if (!valid) {
+        const { details } = error;
         const message = details.map(i => i.message).join(',');
         return res.status(httpCodes.UNPROCESSABLE_ENTITY).json({
-            ErrorModel : {
+            ErrorModel: {
                 errorCode: httpCodes.UNPROCESSABLE_ENTITY,
                 errorMessage: message
-                }
+            }
         });
-    }else{
+    } else {
         let hashedPass = await bcrypt.hash(req.body.password, 10);
 
-            const user = new User ({
-                name: req.body.name,
-                email: req.body.email,
-                phone: req.body.phone,
-                password: hashedPass
+        const user = new User({
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
+            password: hashedPass
+        });
+
+        let createUser = await user.save()
+        if (createUser) {
+            console.log(createUser);
+            return res.status(httpCodes.OK).json({
+                message: "User created Successfully"
             });
-            
-            let createUser = await user.save()
-            if(createUser){
-                console.log(createUser);
-                return res.status(httpCodes.OK).json({
-                    message: "User created Successfully"
-                });
-            }else{
-                return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
-                    ErrorModel : {
-                        errorCode: httpCodes.INTERNAL_SERVER_ERROR,
-                        errorMessage: "User not created"
-                        }
-                });
-            }
+        } else {
+            return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+                ErrorModel: {
+                    errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                    errorMessage: "User not created"
+                }
+            });
+        }
     }
 }
-     //login
+//login
 
-     const login = async(req, res, next) => {
-        const {username, password} = req.body;
-        const loginSchema = Joi.object().keys({
-            username: Joi.string().required().email().messages({
-                'string.empty': `E-post er obligatorisk`,
-                'string.email': `Skriv inn en gyldig e-postadresse`,
-            }),
-            password: Joi.string().required().messages({
-                'string.empty': `Passord er påkrevd`,
+const login = async (req, res, next) => {
+    const { username, password } = req.body;
+    const loginSchema = Joi.object().keys({
+        username: Joi.string().required().email().messages({
+            'string.empty': `email is required`,
+            'string.email': `email is incorrect`,
+        }),
+        password: Joi.string().required().messages({
+            'string.password': `Password is incorrect`,
+        })
+    });
+    const result = await loginSchema.validateAsync(req.body)
+    const user = await User.findOne({ $or: [{ email: username }, { phone: username }] })
+
+    bcrypt.compare(password, user.password, function (err, result) {
+        if (err) {
+            res.json({
+                error: err
             })
-        });
-const result = await loginSchema.validateAsync(req.body)
-        const user = await User.findOne({$or: [{email:username},{phone:username}]})
-        
-      bcrypt.compare(password, user.password, function(err, result){
-      if(err){
-          res.json({
-              error: err
-          })
-      }
-        if(user){
-            const token = jwt.sign({name: user.name}, "verySecretiveValue", {expiresIn: "1min"})
+        }
+        if (user) {
+            const token = jwt.sign({ name: user.name }, "verySecretiveValue", { expiresIn: "1min" })
             console.log(user);
-                return res.status(httpCodes.OK).json({
-                    message: "Login successful",
-                    token
-                })
-            }else{
-                return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
-                    ErrorModel : {
-                        errorCode: httpCodes.INTERNAL_SERVER_ERROR,
-                        errorMessage: "password does not match"
-                        }
-        
+            return res.status(httpCodes.OK).json({
+                message: "Login successful",
+                token
+            })
+        } else {
+            return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+                ErrorModel: {
+                    errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                    errorMessage: "password does not match"
+                }
+
             })
         }
-      })
-              
+    })
+
+}
+//show
+const show = async (req, res, next) => {
+    const id = req.params.id
+    const userInfo = await User.findById(id)
+    if (userInfo) {
+        return res.status(httpCodes.OK).json({
+            data: userInfo,
+            message: "Success"
+        });
+    } else {
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+            ErrorModel: {
+                errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                errorMessage: "failed to fetch user information"
+            }
+        });
     }
-     //show
-     const show = (req, res, next) => {
-        const id = req.params.id
-        const userInfo= User.findById(id)
-        if(userInfo){
-            return res.status(httpCodes.OK).json({
-                data: userInfo,
-                message : "Success"
-            });
-        }else{
-            return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
-                ErrorModel : {
-                    errorCode: httpCodes.INTERNAL_SERVER_ERROR,
-                    errorMessage: "failed to fetch user information"
-                    }
-            });
-        }
-        
-            
-        
-       
-     }
 
 
-        //update
-     const update = async(req, res, next) => {
-        const id = req.params.id
-        console.log(id)
-    
-       const updateSchema = Joi.object().keys({ 
+}
+
+
+//update
+const update = async (req, res, next) => {
+    const id = req.params.id
+    const updateSchema = Joi.object().keys({
         email: Joi.string().required().email().messages({
             'string.empty': `Email is required`,
             'string.email': `Email is incorrect`,
-        }), 
+        }),
         password: Joi.string().required().messages({
             'string.empty': `Password is required`,
         }),
@@ -145,40 +143,57 @@ const result = await loginSchema.validateAsync(req.body)
         phone: Joi.string().required().messages({
             'string.empty': `Enter valid phone number`,
         }),
-        profileImage: joi.string().require().messages({
+        profileImage: Joi.string().required().messages({
             'string.empty': 'choose a file',
         })
-    }); 
-
-    const result = await updateSchema.validate(req.params);
-    const  update= await id.findByIdAndUpdate(id, {$set: updateData})
-        
-  
-    const { value, error } = result; 
-    if(update){
-        return res.status(httpCodes.OK).json({
-            data: id,
-            message : "Successfully updated"
+    });
+    const result = await updateSchema.validate(req.body);
+    const { value, error } = result;
+    const valid = error == null;
+    if (!valid) {
+        const { details } = error;
+        const message = details.map(i => i.message).join(',');
+        return res.status(httpCodes.UNPROCESSABLE_ENTITY).json({
+            ErrorModel: {
+                errorCode: httpCodes.UNPROCESSABLE_ENTITY,
+                errorMessage: message
+            }
         });
-    }else{
-        return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
-            ErrorModel : {
-                errorCode: httpCodes.INTERNAL_SERVER_ERROR,
-                errorMessage: "failed to update"
+    } else {
+        const updateData = {
+            name: req.body.name,
+            email: req.body.email,
+            phone: req.body.phone,
+            profileImage: req.body.profileImage
+        }
+        const update = await User.findByIdAndUpdate(id, { $set: updateData })
+        if (update) {
+            console.log(update);
+            return res.status(httpCodes.OK).json({
+                data: id,
+                message: "Successfully updated"
+            });
+        } else {
+            console.log(update);
+            return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+                ErrorModel: {
+                    errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                    errorMessage: "failed to update"
                 }
-        });
+            });
+        }
     }
+}
 
-     }
+//uploadImage
 
 
 
-    
-    
+
 exports.register = register;
 exports.login = login;
-   exports.show = show;
-   exports.update = update;
+exports.show = show;
+exports.update = update;
 
 
-     
+
