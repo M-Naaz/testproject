@@ -113,7 +113,7 @@ const login = async (req, res, next) => {
             })
         }
         if (user) {
-            const token = jwt.sign({ name: user.name }, "verySecretiveValue", { expiresIn: "1min" })
+            const token = jwt.sign({ name: user.name }, "verySecretiveValue", { expiresIn: "5min" })
             console.log(user);
             return res.status(httpCodes.OK).json({
                 message: "Login successful",
