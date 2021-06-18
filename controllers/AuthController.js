@@ -3,41 +3,12 @@ const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const Joi = require("joi")
 const httpCodes = require("http-status-codes");
-const path = require('path')
-const multer = require('multer')
 
-const storage = multer.diskStorage({
-    destination: './public/uploads/',
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
-    }
-});
 
-const upload = multer({
-    storage: storage,
-    limits: { fileSize: 1000000 },
-    fileFilter: function (req, file, cb) {
-        checkFileType(file, cb);
-    }
-}).single('profileImage');
-
-function checkFileType(file, cb) {
-    // Allowed ext
-    const filetypes = /jpeg|jpg|png|gif/;
-    // Check ext
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
-    const mimetype = filetypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-        return cb(null, true);
-    } else {
-        cb('Error: Images Only!');
-    }
-}
 //register
 const register = async (req, res, next) => {
     console.log(req.body)
+    console.log(req.file)
     const { email, password, name, phone } = req.body;
     /** Validation */
     const registerSchema = Joi.object().keys({
@@ -81,56 +52,46 @@ const register = async (req, res, next) => {
                 }
             });
         } else {
-            
-                let userData;
-                await upload(req, res, (err) => {
-                    if (err) {
-                        res.status(400).send(err);
-                    } else {
-                        console.log(req.file)
-                        if (req.file == undefined) {
-                            res.status(400).send(' Error: No File Selected!');
-                        } else {
-                            req.body.profileImage = `${req.file.filename}`;
-                            userData = {
-                                profileImage: req.body.profileImage
-                            };
-                        }
-                    }
-                });
-
-                let hashedPass = await bcrypt.hash(req.body.password, 10);
-
-                const user = new User({
-                    name: req.body.name,
-                    email: req.body.email,
-                    phone: req.body.phone,
-                    password: hashedPass,
-                    profileImage:req.body.profileImage
-                });
-
-                let createUser = await user.save()
-                if (createUser) {
-                    console.log(createUser);
-                    return res.status(httpCodes.OK).json({
-                        message: "User created Successfully"
-                    });
-                } else {
-                    return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
-                        ErrorModel: {
-                            errorCode: httpCodes.INTERNAL_SERVER_ERROR,
-                            errorMessage: "User not created"
-                        }
-                    });
-                }
+            console.log(req.file)
+            if (req.file == undefined) {
+                res.status(400).send(' Error: No File Selected!');
+            } else {
+                req.body.profileImage = `${req.file.filename}`;
+                userData = {
+                    profileImage: req.body.profileImage
+                };
             }
 
-        }
-    }
+            let hashedPass = await bcrypt.hash(req.body.password, 10);
 
+            const user = new User({
+                name: req.body.name,
+                email: req.body.email,
+                phone: req.body.phone,
+                password: hashedPass,
+                profileImage: req.body.profileImage
+            });
+
+            let createUser = await user.save()
+            if (createUser) {
+                console.log(createUser);
+                return res.status(httpCodes.OK).json({
+                    message: "User created Successfully"
+                });
+            } else {
+                return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+                    ErrorModel: {
+                        errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                        errorMessage: "User not created"
+                    }
+                });
+            }
+        }
+
+    }
+}
 
 //login
-
 const login = async (req, res, next) => {
     const { username, password } = req.body;
     const loginSchema = Joi.object().keys({
@@ -243,25 +204,22 @@ const update = async (req, res, next) => {
                 }
             });
         } else {
-            let updateData;
-            upload(req, res, (err) => {
-                if (err) {
-                    res.status(400).send(err);
-                } else {
-                    if (req.file == undefined) {
-                        res.status(400).send(' Error: No File Selected!');
-                    } else {
-                        req.body.profileImage = `${req.file.filename}`;
-                        updateData = {
-                            name: req.body.name,
-                            email: req.body.email,
-                            phone: req.body.phone,
-                            profileImage: req.body.profileImage
-                        };
-                    }
-                }
-            });
+            console.log(req.file)
+            if (req.file == undefined) {
+                res.status(400).send(' Error: No File Selected!');
+            } else {
+                req.body.profileImage = `${req.file.filename}`;
+                userData = {
+                    profileImage: req.body.profileImage
+                };
+            }
 
+            const updateData = {
+                name: req.body.name,
+                email: req.body.email,
+                phone: req.body.phone,
+                profileImage: req.body.profileImage
+            };
             const update = await User.findByIdAndUpdate(id, { $set: updateData })
             if (update) {
                 console.log(update);
