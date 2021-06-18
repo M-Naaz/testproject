@@ -104,7 +104,7 @@ const login = async (req, res, next) => {
         })
     });
     const result = await loginSchema.validateAsync(req.body)
-    const user = await User.findOne({ $or: [{ email: username }, { phone: username }] })
+    const user = await User.findOne({ $or: [{ email: username }] })
 
     bcrypt.compare(password, user.password, function (err, result) {
         if (err) {
