@@ -2,13 +2,13 @@ const jwt = require("jsonwebtoken")
 
 const authenticate = (req, res, next) => {
     try {
-    const token = req.headers.authorization.split(" ")[1]
-    const decode = jwt.verify(token, "verySecretiveValue")
+        const token = req.headers.authorization.split(" ")[1]
+        const decode = jwt.verify(token, "verySecretiveValue")
 
-    req.user = decode
-    next()
+        req.user = decode
+        next()
     }
-    catch(error) {
+    catch (error) {
         res.json({
             message: "Authentication failed!"
         })

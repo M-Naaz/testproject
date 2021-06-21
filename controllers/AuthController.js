@@ -90,7 +90,6 @@ const register = async (req, res, next) => {
 
     }
 }
-
 //login
 const login = async (req, res, next) => {
     const { username, password } = req.body;
@@ -104,15 +103,22 @@ const login = async (req, res, next) => {
         })
     });
     const result = await loginSchema.validateAsync(req.body)
+    
+    //user not found
     const user = await User.findOne({ $or: [{ email: username }] })
+    if (!user) {
+        console.log(user)
+        return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+            ErrorModel: {
+                errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                errorMessage: "user not found"
 
-    bcrypt.compare(password, user.password, function (err, result) {
-        if (err) {
-            res.json({
-                error: err
-            })
-        }
-        if (user) {
+            }
+        });
+    } else {
+
+        let verify = await bcrypt.compare(password, user.password);
+        if (verify) {
             const token = jwt.sign({ name: user.name }, "verySecretiveValue", { expiresIn: "5min" })
             console.log(user);
             return res.status(httpCodes.OK).json({
@@ -120,17 +126,17 @@ const login = async (req, res, next) => {
                 token
             })
         } else {
-            return res.status(httpCodes.INTERNAL_SERVER_ERROR).json({
+            return res.status(httpCodes.BAD_REQUEST).json({
                 ErrorModel: {
-                    errorCode: httpCodes.INTERNAL_SERVER_ERROR,
+                    errorCode: httpCodes.BAD_REQUEST,
                     errorMessage: "password does not match"
                 }
-
             })
         }
-    })
-
+    }
 }
+
+
 //show
 const show = async (req, res, next) => {
     const id = req.params.id
