@@ -103,7 +103,7 @@ const login = async (req, res, next) => {
         })
     });
     const result = await loginSchema.validateAsync(req.body)
-    
+
     //user not found
     const user = await User.findOne({ $or: [{ email: username }] })
     if (!user) {
